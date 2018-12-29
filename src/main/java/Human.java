@@ -3,9 +3,11 @@ import org.graphstream.graph.Node;
 public abstract class Human{
 
     Node node;
+    Status status;
 
-    public Human(Human human) {
-        node = human.node;
+    public Human(Human otherHuman) {
+        node = otherHuman.node;
+        status = otherHuman.status;
         setStatus();
     }
 
