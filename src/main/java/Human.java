@@ -4,8 +4,8 @@ public abstract class Human{
 
     Node node;
 
-    public Human(Human h) {
-        node = h.node;
+    public Human(Human human) {
+        node = human.node;
         setStatus();
     }
 
