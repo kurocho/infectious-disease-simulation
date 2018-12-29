@@ -8,6 +8,11 @@ public class Susceptible extends Human {
 
     @Override
     void setStyle() {
-        node.setAttribute("ui.class", "suspectible");
+        node.setAttribute("ui.class", "susceptible");
+    }
+
+    @Override
+    boolean isInfected() {
+        return false;
     }
 }

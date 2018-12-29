@@ -4,21 +4,27 @@ public abstract class Human{
 
     Node node;
 
+    public Human(Human h) {
+        node = h.node;
+        setStatus();
+    }
+
     public Human(Node node) {
         this.node = node;
-        setStyle();
+        setStatus();
     }
+
 
     public void setNode(Node n) {
         node = n;
+        setStatus();
+    }
+
+    public void setStatus(){
         setStyle();
     }
 
-    public Node getNode() {
-        return node;
-    }
-
-
     abstract void setStyle();
 
+    abstract boolean isInfected();
 }

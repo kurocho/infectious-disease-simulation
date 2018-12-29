@@ -2,6 +2,10 @@ import org.graphstream.graph.Node;
 
 public class Infectious extends Human {
 
+    public Infectious(Human human) {
+        super(human);
+    }
+
     public Infectious(Node node) {
         super(node);
     }
@@ -10,4 +14,10 @@ public class Infectious extends Human {
     void setStyle() {
         node.setAttribute("ui.class", "infectious");
     }
+
+    @Override
+    boolean isInfected() {
+        return true;
+    }
+
 }

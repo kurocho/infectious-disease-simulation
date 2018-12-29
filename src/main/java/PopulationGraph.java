@@ -20,11 +20,19 @@ public class PopulationGraph extends SingleGraph {
 
 
     void bindNodeWithHuman(Node n, Human h){
+        n.addAttribute("Human", h);
+    }
+
+    void changeHumanState(Node n, Human h){
         n.setAttribute("Human", h);
     }
 
     Human getHumanFromNode(int count){
         return this.getNode(count).getAttribute("Human");
+    }
+
+    Human getHumanFromNode(Node n){
+        return n.getAttribute("Human");
     }
 
     /**

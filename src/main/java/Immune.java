@@ -9,4 +9,10 @@ public class Immune extends Human {
     void setStyle() {
         node.setAttribute("ui.class", "immune");
     }
+
+    @Override
+    boolean isInfected() {
+        return false;
+    }
+
 }

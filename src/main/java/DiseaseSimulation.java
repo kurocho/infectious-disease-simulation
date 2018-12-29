@@ -12,6 +12,7 @@ import java.awt.event.MouseWheelListener;
 public class DiseaseSimulation {
     private int nodeCount = 1000;
     private int nodeLinkCount = 2;
+    private double infectiousPercent = 5;
     private PopulationGraph graph;
 
     void start() {
@@ -19,6 +20,7 @@ public class DiseaseSimulation {
         setStyle();
         setZoom();
         runSimluation();
+        setInfectedHumans(infectiousPercent);
     }
 
     private void initBAGraph() {
@@ -42,7 +44,7 @@ public class DiseaseSimulation {
         graph.addAttribute("ui.stylesheet",
                 "graph { padding: 100px; fill-color: #2b2b2b; }" +
                         "node { size: 5px; fill-color: #ffc438; text-color: #bbb; text-alignment: under; text-background-mode: rounded-box; text-background-color: #565656; text-padding: 5px, 4px; text-offset: 0px, 5px; }" +
-                        "node.infected { fill-color: #ff0000; } " +
+                        "node.infectious { fill-color: #ff0000; } " +
                         "node.susceptible { fill-color: #ffc438; } " +
                         "node.immune { fill-color: #00ff00; } " +
                         "edge { fill-color: #bbb; text-color: #bbb; text-alignment: under; text-background-mode: rounded-box; text-background-color: #565656; text-padding: 5px, 4px; text-offset: 0px, 5px; }" +
@@ -74,9 +76,15 @@ public class DiseaseSimulation {
         });
     }
 
-    private void setInfectedNodes(double percent){
+    private void setInfectedHumans(double percent){
         for (int i = 0; i< graph.getNodeCount()*percent/100; i++) {
-            graph.getNode((int) Math.floor(Math.random()* graph.getNodeCount())).setAttribute("ui.class", "infected");
+            int oneFromThatPercent = (int) Math.floor(Math.random()* graph.getNodeCount());
+            Human willBeInfected = graph.getHumanFromNode(oneFromThatPercent);
+            if(!willBeInfected.isInfected()){
+                graph.changeHumanState(willBeInfected.node, new Infectious(willBeInfected));
+            }else{
+                i--;
+            }
         }
     }
 
