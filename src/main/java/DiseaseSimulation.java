@@ -12,7 +12,7 @@ import java.awt.event.MouseWheelListener;
 public class DiseaseSimulation {
     private int nodeCount = 1000;
     private int nodeLinkCount = 2;
-    private double infectiousPercent = 5;
+    private double infectiousPercent = 0.1;
     private PopulationGraph graph;
 
     void start() {
@@ -77,7 +77,8 @@ public class DiseaseSimulation {
     }
 
     private void setInfectedHumans(double percent){
-        for (int i = 0; i< graph.getNodeCount()*percent/100; i++) {
+        int howManyToInfect = (int) Math.floor(graph.getNodeCount() * (percent / 100));
+        for (int i = 0; i < howManyToInfect; i++) {
             int oneFromThatPercent = (int) Math.floor(Math.random()* graph.getNodeCount());
             Human willBeInfected = graph.getHumanFromNode(oneFromThatPercent);
             if(!willBeInfected.isInfected()){
