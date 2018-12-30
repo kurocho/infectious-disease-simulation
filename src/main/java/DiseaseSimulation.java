@@ -10,7 +10,7 @@ import org.graphstream.ui.view.Viewer;
 public class DiseaseSimulation {
     private int nodeCount = 100;
     private int maxLinksPerStep = 2;
-    private double infectiousPercent = 10;
+    private double infectiousPercent = 5;
     private PopulationGraph graph;
     Generator generator = new BarabasiAlbertGenerator(maxLinksPerStep);
 
@@ -75,9 +75,10 @@ public class DiseaseSimulation {
     }
 
     private void setInfectedHumans(double percent){
-        int howManyToInfect = (int) Math.floor(graph.getNodeCount() * (percent / 100));
+        int count = graph.getNodeCount()-1;
+        int howManyToInfect = (int) Math.floor(count * (percent / 100));
         for (int i = 0; i < howManyToInfect; i++) {
-            int oneFromThatPercent = (int) Math.floor(Math.random()* graph.getNodeCount()) - 1;
+            int oneFromThatPercent = (int) Math.floor(Math.random()* count);
             Human willBeInfected = graph.getHumanFromNode(oneFromThatPercent);
             if(!willBeInfected.isInfected()){
                 graph.changeHumanState(willBeInfected.node, new Infectious(willBeInfected));
