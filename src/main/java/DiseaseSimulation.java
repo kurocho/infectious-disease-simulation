@@ -8,8 +8,8 @@ import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
 
 public class DiseaseSimulation {
-    private int nodeCount = 100;
-    private int maxLinksPerStep = 2;
+    private int nodeCount = 10;
+    private int maxLinksPerStep = 3;
     private double infectiousPercent = 5;
     private PopulationGraph graph;
     Generator generator = new BarabasiAlbertGenerator(maxLinksPerStep);
@@ -19,7 +19,7 @@ public class DiseaseSimulation {
         setStyle();
         setZoom();
         setInfectedHumans(infectiousPercent);
-        runSimluation(1000);
+        runSimluation(100);
     }
 
     private void initBAGraph() {
@@ -93,12 +93,13 @@ public class DiseaseSimulation {
             sleep(dayTime);
             //born
             graph.addHuman(new Immune(), maxLinksPerStep);
+//            graph.killRandomHuman();
 
 
         }
     }
 
-    protected void sleep(int i) {
+    private void sleep(int i) {
         try { Thread.sleep(i); } catch(InterruptedException e) {}
     }
 }

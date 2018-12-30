@@ -1,6 +1,8 @@
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -40,18 +42,27 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void addHuman(Human human, int maxLinkPerStep) {
+        maxLinkPerStep = random.nextInt(maxLinkPerStep)+1;
+        int linkCount = 0;
         numberOfCreatedNodes++;
         String newId = numberOfCreatedNodes + 1 + "";
         Node newNode = this.addNode(newId);
         human.setNode(newNode);
+
         if(getNodeCount()>1) {
+            // shuffle list to make random (but "preferenced" ) connections
+            ArrayList<Node> nodes = new ArrayList<Node>(getNodeSet());
+            Collections.shuffle(nodes);
             //dont stop until node will get at least one edge
             while(newNode.getDegree() == 0) {
-                for (Node n : getNodeSet()) {
+                for (Node n : nodes) {
                     double p = (double) n.getDegree() / getDegreeSum();
                     if (Math.random() <= p) {
                         connectNodes(newNode, n);
+                        linkCount++;
                     }
+                    if(linkCount >= maxLinkPerStep)
+                        break;
                 }
             }
         }
