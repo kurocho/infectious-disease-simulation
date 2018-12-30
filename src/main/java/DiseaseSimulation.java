@@ -6,36 +6,36 @@ import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 
 public class DiseaseSimulation {
-    private int nodeCount = 1000;
-    private int nodeLinkCount = 2;
-    private double infectiousPercent = 0.1;
+    private int nodeCount = 100;
+    private int maxLinksPerStep = 2;
+    private double infectiousPercent = 10;
     private PopulationGraph graph;
+    Generator generator = new BarabasiAlbertGenerator(maxLinksPerStep);
 
     void start() {
         initBAGraph();
         setStyle();
         setZoom();
-        runSimluation();
         setInfectedHumans(infectiousPercent);
+        runSimluation(1000);
     }
 
     private void initBAGraph() {
         graph = new PopulationGraph("Barabàsi-Albert");
-        graph.display(false);
-        Generator gen = new BarabasiAlbertGenerator(nodeLinkCount);
-        gen.addSink(graph);
-        gen.begin();
+        graph.display(true);
+        generator.addSink(graph);
+        generator.begin();
         for (int i = 0; i < nodeCount; i++) {
-            gen.nextEvents();
+            generator.nextEvents();
             Node node = graph.getNode(i);
             Human human = new Susceptible(node);
             graph.bindNodeWithHuman(node, human);
         }
-        gen.end();
+        graph.numberOfCreatedNodes = nodeCount;
+        generator.end();
+
     }
 
     private void setStyle() {
@@ -57,29 +57,27 @@ public class DiseaseSimulation {
         viewer.enableAutoLayout();
         final ViewPanel view = viewer.addDefaultView(true);
         view.resizeFrame(1000, 800);
-        ((ViewPanel) view).addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                e.consume();
-                int i = e.getWheelRotation();
-                double factor = Math.pow(1.01, i);
-                Camera cam = view.getCamera();
-                double zoom = cam.getViewPercent() * factor;
-                Point2 pxCenter = cam.transformGuToPx(cam.getViewCenter().x, cam.getViewCenter().y, 0);
-                Point3 guClicked = cam.transformPxToGu(e.getX(), e.getY());
-                double newRatioPx2Gu = cam.getMetrics().ratioPx2Gu / factor;
-                double x = guClicked.x + (pxCenter.x - e.getX()) / newRatioPx2Gu;
-                double y = guClicked.y - (pxCenter.y - e.getY()) / newRatioPx2Gu;
-                cam.setViewCenter(x, y, 0);
-                cam.setViewPercent(zoom);
+        ((ViewPanel) view).addMouseWheelListener(e -> {
+            e.consume();
+            int i = e.getWheelRotation();
+            double factor = Math.pow(1.01, i);
+            Camera cam = view.getCamera();
+            double zoom = cam.getViewPercent() * factor;
+            Point2 pxCenter = cam.transformGuToPx(cam.getViewCenter().x, cam.getViewCenter().y, 0);
+            Point3 guClicked = cam.transformPxToGu(e.getX(), e.getY());
+            double newRatioPx2Gu = cam.getMetrics().ratioPx2Gu / factor;
+            double x = guClicked.x + (pxCenter.x - e.getX()) / newRatioPx2Gu;
+            double y = guClicked.y - (pxCenter.y - e.getY()) / newRatioPx2Gu;
+            cam.setViewCenter(x, y, 0);
+            cam.setViewPercent(zoom);
 
-            }
         });
     }
 
     private void setInfectedHumans(double percent){
         int howManyToInfect = (int) Math.floor(graph.getNodeCount() * (percent / 100));
         for (int i = 0; i < howManyToInfect; i++) {
-            int oneFromThatPercent = (int) Math.floor(Math.random()* graph.getNodeCount());
+            int oneFromThatPercent = (int) Math.floor(Math.random()* graph.getNodeCount()) - 1;
             Human willBeInfected = graph.getHumanFromNode(oneFromThatPercent);
             if(!willBeInfected.isInfected()){
                 graph.changeHumanState(willBeInfected.node, new Infectious(willBeInfected));
@@ -89,7 +87,17 @@ public class DiseaseSimulation {
         }
     }
 
-    private void runSimluation(){
+    private void runSimluation(int dayTime){
+        while (true){
+            sleep(dayTime);
+            //born
+            graph.addHuman(new Immune(), maxLinksPerStep);
 
+
+        }
+    }
+
+    protected void sleep(int i) {
+        try { Thread.sleep(i); } catch(InterruptedException e) {}
     }
 }

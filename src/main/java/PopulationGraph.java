@@ -1,10 +1,15 @@
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
+import java.util.Random;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class PopulationGraph extends SingleGraph {
+
+    int numberOfCreatedNodes = 0;
+    Random random = new Random();
 
     public PopulationGraph(String id, boolean strictChecking, boolean autoCreate, int initialNodeCapacity, int initialEdgeCapacity) {
         super(id, strictChecking, autoCreate, initialNodeCapacity, initialEdgeCapacity);
@@ -18,22 +23,61 @@ public class PopulationGraph extends SingleGraph {
         super(id);
     }
 
-
-    void bindNodeWithHuman(Node n, Human h){
+    void bindNodeWithHuman(Node n, Human h) {
         n.addAttribute("Human", h);
     }
 
-    void changeHumanState(Node n, Human h){
+    void changeHumanState(Node n, Human h) {
         n.setAttribute("Human", h);
     }
 
-    Human getHumanFromNode(int count){
+    Human getHumanFromNode(int count) {
         return this.getNode(count).getAttribute("Human");
     }
 
-    Human getHumanFromNode(Node n){
+    Human getHumanFromNode(Node n) {
         return n.getAttribute("Human");
     }
+
+    void addHuman(Human human, int maxLinkPerStep) {
+        numberOfCreatedNodes++;
+        String newId = numberOfCreatedNodes + 1 + "";
+        Node newNode = this.addNode(newId);
+        human.setNode(newNode);
+        if(getNodeCount()>1) {
+            //dont stop until node will get at least one edge
+            while(newNode.getDegree() == 0) {
+                for (Node n : getNodeSet()) {
+                    double p = (double) n.getDegree() / getDegreeSum();
+                    if (Math.random() <= p) {
+                        connectNodes(newNode, n);
+                    }
+                }
+            }
+        }
+    }
+
+    Node getRandomNode(){
+        return getNode(random.nextInt(getNodeCount()));
+    }
+
+    void connectNodes(Node first, Node second){
+        if(!first.hasEdgeBetween(second))
+            addEdge(first.getId() + "_" + second.getId(), first, second);
+    }
+
+    int getDegreeSum(){
+        return getNodeSet().parallelStream().mapToInt(Node::getDegree).sum();
+    }
+
+
+    void killRandomHuman(){
+        removeNode(getRandomNode());
+    }
+    void killHuman(Human human) {
+        this.removeNode(human.node);
+    }
+
 
     /**
      * Performs the given action for each element of the {@code Iterable}

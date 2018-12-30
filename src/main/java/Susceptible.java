@@ -2,6 +2,10 @@ import org.graphstream.graph.Node;
 
 public class Susceptible extends Human {
 
+
+    public Susceptible() {
+    }
+
     public Susceptible(Human human) {
         super(human);
     }

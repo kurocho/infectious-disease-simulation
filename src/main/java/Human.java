@@ -5,6 +5,9 @@ public abstract class Human{
     Node node;
     Status status;
 
+    public Human(){
+
+    }
     public Human(Human otherHuman) {
         node = otherHuman.node;
         status = otherHuman.status;
