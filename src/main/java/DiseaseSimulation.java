@@ -8,8 +8,10 @@ import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
 
 public class DiseaseSimulation {
-    private int nodeCount = 10;
-    private int maxLinksPerStep = 3;
+    //TODO rozważyć czy nie lepiej zrobić tak że jedna osoba poznaje 1 lub wiecej osob na raz ale tylko się znających
+    // lub dodac spotkania tych co znali umarlego?
+    private int nodeCount = 100;
+    private int maxLinksPerStep = 5;
     private double infectiousPercent = 5;
     private PopulationGraph graph;
     Generator generator = new BarabasiAlbertGenerator(maxLinksPerStep);
@@ -24,7 +26,6 @@ public class DiseaseSimulation {
 
     private void initBAGraph() {
         graph = new PopulationGraph("Barabàsi-Albert");
-        graph.display(true);
         generator.addSink(graph);
         generator.begin();
         for (int i = 0; i < nodeCount; i++) {
@@ -35,7 +36,6 @@ public class DiseaseSimulation {
         }
         graph.numberOfCreatedNodes = nodeCount;
         generator.end();
-
     }
 
     private void setStyle() {

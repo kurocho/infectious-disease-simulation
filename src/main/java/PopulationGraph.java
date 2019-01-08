@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public class PopulationGraph extends SingleGraph {
 
+    double zeroLinkNodeChance = 0.1;
     int numberOfCreatedNodes = 0;
     Random random = new Random();
 
@@ -56,13 +57,23 @@ public class PopulationGraph extends SingleGraph {
             //dont stop until node will get at least one edge
             while(newNode.getDegree() == 0) {
                 for (Node n : nodes) {
-                    double p = (double) n.getDegree() / getDegreeSum();
-                    if (Math.random() <= p) {
-                        connectNodes(newNode, n);
-                        linkCount++;
+                    if(n != newNode && !n.hasEdgeBetween(newNode)) {
+                        double p = ((double) n.getDegree() / getDegreeSum());
+                        if (Math.random() <= p) {
+                            connectNodes(newNode, n);
+                            linkCount++;
+                        } else if(getDegreeSum() == 0){
+                            connectNodes(newNode, getRandomNode());
+                            linkCount++;
+                        } else if(n.getDegree() == 0){
+                            if(Math.random() <= zeroLinkNodeChance){
+                                connectNodes(newNode, n);
+                                linkCount++;
+                            }
+                        }
+                        if (linkCount >= maxLinkPerStep)
+                            break;
                     }
-                    if(linkCount >= maxLinkPerStep)
-                        break;
                 }
             }
         }
