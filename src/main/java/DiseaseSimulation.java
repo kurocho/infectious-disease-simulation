@@ -10,31 +10,31 @@ import org.graphstream.ui.view.Viewer;
 public class DiseaseSimulation {
     //TODO rozważyć czy nie lepiej zrobić tak że jedna osoba poznaje 1 lub wiecej osob na raz ale tylko się znających
     // lub dodac spotkania tych co znali umarlego?
-    private int nodeCount = 100;
-    private int maxLinksPerStep = 5;
-    private double infectiousPercent = 5;
-    private PopulationGraph graph;
-    Generator generator = new BarabasiAlbertGenerator(maxLinksPerStep);
+    private static final int NODE_COUNT = 1000;
+    private static final int MAX_LINKS_PER_STEP = 5;
+    private static final double INFECTIOUS_PERCENT = 50;
+    private static final PopulationGraph graph = new PopulationGraph("Barabàsi-Albert");
 
     void start() {
-        initBAGraph();
         setStyle();
+        initBAGraph();
         setZoom();
-        setInfectedHumans(infectiousPercent);
-        runSimluation(100);
+        setInfectedHumans(INFECTIOUS_PERCENT);
+        runSimluation(1000);
     }
 
     private void initBAGraph() {
-        graph = new PopulationGraph("Barabàsi-Albert");
+        Generator generator = new BarabasiAlbertGenerator(MAX_LINKS_PER_STEP);
         generator.addSink(graph);
         generator.begin();
-        for (int i = 0; i < nodeCount; i++) {
+        for (int i = 0; i < NODE_COUNT; i++) {
             generator.nextEvents();
-            Node node = graph.getNode(i);
+        }
+        for(Node node: graph.getNodeSet()){
             Human human = new Susceptible(node);
             graph.bindNodeWithHuman(node, human);
         }
-        graph.numberOfCreatedNodes = nodeCount;
+        graph.numberOfCreatedNodes = graph.getNodeCount();
         generator.end();
     }
 
@@ -75,7 +75,7 @@ public class DiseaseSimulation {
     }
 
     private void setInfectedHumans(double percent){
-        int count = graph.getNodeCount()-1;
+        int count = graph.getNodeCount();
         int howManyToInfect = (int) Math.floor(count * (percent / 100));
         for (int i = 0; i < howManyToInfect; i++) {
             int oneFromThatPercent = (int) Math.floor(Math.random()* count);
@@ -92,7 +92,7 @@ public class DiseaseSimulation {
         while (true){
             sleep(dayTime);
             //born
-            graph.addHuman(new Immune(), maxLinksPerStep);
+            graph.addHuman(new Susceptible(), MAX_LINKS_PER_STEP);
 //            graph.killRandomHuman();
 
 
