@@ -10,31 +10,37 @@ import org.graphstream.ui.view.Viewer;
 public class DiseaseSimulation {
     //TODO rozważyć czy nie lepiej zrobić tak że jedna osoba poznaje 1 lub wiecej osob na raz ale tylko się znających
     // lub dodac spotkania tych co znali umarlego?
-    private static final int NODE_COUNT = 1000;
-    private static final int MAX_LINKS_PER_STEP = 5;
-    private static final double INFECTIOUS_PERCENT = 50;
+    private ConfigurationProvider configurationProvider;
+
+    private int nodeCount;
+    private int maxLinksPerStep;
     private static final PopulationGraph graph = new PopulationGraph("Barabàsi-Albert");
+
+    DiseaseSimulation() {
+        configurationProvider = ConfigurationProvider.getInstance();
+        nodeCount = configurationProvider.getNodeCount();
+        maxLinksPerStep = configurationProvider.getMaxLinksPerStep();
+    }
 
     void start() {
         setStyle();
         initBAGraph();
         setZoom();
-        setInfectedHumans(INFECTIOUS_PERCENT);
+        initializeWithInfectedHumans(configurationProvider.getBaseLineInfectedPercentage());
         runSimluation(1000);
     }
 
     private void initBAGraph() {
-        Generator generator = new BarabasiAlbertGenerator(MAX_LINKS_PER_STEP);
+        Generator generator = new BarabasiAlbertGenerator(maxLinksPerStep);
         generator.addSink(graph);
         generator.begin();
-        for (int i = 0; i < NODE_COUNT; i++) {
+        for (int i = 0; i < nodeCount; i++) {
             generator.nextEvents();
         }
-        for(Node node: graph.getNodeSet()){
+        for (Node node : graph.getNodeSet()) {
             Human human = new Susceptible(node);
-            graph.bindNodeWithHuman(node, human);
+            graph.bindHumanToNode(node, human);
         }
-        graph.numberOfCreatedNodes = graph.getNodeCount();
         generator.end();
     }
 
@@ -52,7 +58,7 @@ public class DiseaseSimulation {
     }
 
 
-    private void setZoom(){
+    private void setZoom() {
         Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
         final ViewPanel view = viewer.addDefaultView(true);
@@ -74,25 +80,24 @@ public class DiseaseSimulation {
         });
     }
 
-    private void setInfectedHumans(double percent){
+    private void initializeWithInfectedHumans(double baselineInfectedPercentage) {
         int count = graph.getNodeCount();
-        int howManyToInfect = (int) Math.floor(count * (percent / 100));
-        for (int i = 0; i < howManyToInfect; i++) {
-            int oneFromThatPercent = (int) Math.floor(Math.random()* count);
-            Human willBeInfected = graph.getHumanFromNode(oneFromThatPercent);
-            if(!willBeInfected.isInfected()){
-                graph.changeHumanState(willBeInfected.node, new Infectious(willBeInfected));
-            }else{
-                i--;
+        int howManyToInfect = (int) Math.floor(count * (baselineInfectedPercentage / 100));
+        while(howManyToInfect > 0){
+            int nodeId = (int) Math.floor(Math.random() * count);
+            Human human = graph.getHumanFromNode(nodeId);
+            if(!human.isInfected()){
+                graph.changeHumanState(human.node, new Infectious(human));
+                --howManyToInfect;
             }
         }
     }
 
-    private void runSimluation(int dayTime){
-        while (true){
+    private void runSimluation(int dayTime) {
+        while (true) {
             sleep(dayTime);
             //born
-            graph.addHuman(new Susceptible(), MAX_LINKS_PER_STEP);
+            graph.addHuman(new Susceptible(), maxLinksPerStep);
 //            graph.killRandomHuman();
 
 
@@ -100,6 +105,9 @@ public class DiseaseSimulation {
     }
 
     private void sleep(int i) {
-        try { Thread.sleep(i); } catch(InterruptedException e) {}
+        try {
+            Thread.sleep(i);
+        } catch (InterruptedException e) {
+        }
     }
 }

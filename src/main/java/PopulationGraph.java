@@ -1,17 +1,11 @@
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class PopulationGraph extends SingleGraph {
 
-    double zeroLinkNodeChance = 0.1;
-    int numberOfCreatedNodes = 0;
     Random random = new Random();
 
     public PopulationGraph(String id, boolean strictChecking, boolean autoCreate, int initialNodeCapacity, int initialEdgeCapacity) {
@@ -26,16 +20,16 @@ public class PopulationGraph extends SingleGraph {
         super(id);
     }
 
-    void bindNodeWithHuman(Node n, Human h) {
+    void bindHumanToNode(Node n, Human h) {
         n.addAttribute("Human", h);
     }
 
     void changeHumanState(Node n, Human h) {
-        n.setAttribute("Human", h);
+        bindHumanToNode(n, h);
     }
 
-    Human getHumanFromNode(int count) {
-        return this.getNode(count).getAttribute("Human");
+    Human getHumanFromNode(int nodeId) {
+        return this.getNode(nodeId).getAttribute("Human");
     }
 
     Human getHumanFromNode(Node n) {
@@ -43,59 +37,55 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void addHuman(Human human, int maxLinkPerStep) {
-        maxLinkPerStep = random.nextInt(maxLinkPerStep)+1;
-        int linkCount = 0;
-        numberOfCreatedNodes++;
-        String newId = numberOfCreatedNodes + 1 + "";
+        int graphNodeCount = getNodeCount();
+        String newId = graphNodeCount + "";
         Node newNode = this.addNode(newId);
         human.setNode(newNode);
 
-        if(getNodeCount()>1) {
+        int targetDegree = random.nextInt(maxLinkPerStep) + 1;
+        targetDegree = Math.min(targetDegree, graphNodeCount);
+
+        int edgesCreated = 0;
+        if (getNodeCount() > 1) {
             // shuffle list to make random (but "preferenced" ) connections
-            ArrayList<Node> nodes = new ArrayList<Node>(getNodeSet());
+            List<Node> nodes = new ArrayList<Node>(getNodeSet());
             Collections.shuffle(nodes);
-            //dont stop until node will get at least one edge
-            while(newNode.getDegree() == 0) {
-                for (Node n : nodes) {
-                    if(n != newNode && !n.hasEdgeBetween(newNode)) {
-                        double p = ((double) n.getDegree() / getDegreeSum());
-                        if (Math.random() <= p) {
-                            connectNodes(newNode, n);
-                            linkCount++;
-                        } else if(getDegreeSum() == 0){
-                            connectNodes(newNode, getRandomNode());
-                            linkCount++;
-                        } else if(n.getDegree() == 0){
-                            if(Math.random() <= zeroLinkNodeChance){
-                                connectNodes(newNode, n);
-                                linkCount++;
-                            }
+            // dont stop until node will get at least one edge
+            while (newNode.getDegree() == 0) {
+                for (Node currentNode : nodes) {
+                    if (!currentNode.equals(newNode) && !currentNode.hasEdgeBetween(newNode)) {
+                        double relativeDegree = ((double) currentNode.getDegree() / getDegreeSum());
+                        if (Math.random() <= relativeDegree) {
+                            connectNodes(newNode, currentNode);
+                            edgesCreated++;
                         }
-                        if (linkCount >= maxLinkPerStep)
+                        if (edgesCreated >= targetDegree) {
                             break;
+                        }
                     }
                 }
             }
         }
     }
 
-    Node getRandomNode(){
+    Node getRandomNode() {
         return getNode(random.nextInt(getNodeCount()));
     }
 
-    void connectNodes(Node first, Node second){
-        if(!first.hasEdgeBetween(second))
+    void connectNodes(Node first, Node second) {
+        if (!first.hasEdgeBetween(second))
             addEdge(first.getId() + "_" + second.getId(), first, second);
     }
 
-    int getDegreeSum(){
+    int getDegreeSum() {
         return getNodeSet().parallelStream().mapToInt(Node::getDegree).sum();
     }
 
 
-    void killRandomHuman(){
+    void killRandomHuman() {
         removeNode(getRandomNode());
     }
+
     void killHuman(Human human) {
         this.removeNode(human.node);
     }
