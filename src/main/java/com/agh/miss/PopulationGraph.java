@@ -1,4 +1,6 @@
-import human.Human;
+package com.agh.miss;
+
+import com.agh.miss.human.Human;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
@@ -22,7 +24,7 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void bindHumanToNode(Node n, Human h) {
-        n.addAttribute("human.Human", h);
+        n.addAttribute("com.agh.miss.human.Human", h);
     }
 
     void changeHumanState(Node n, Human h) {
@@ -30,11 +32,11 @@ public class PopulationGraph extends SingleGraph {
     }
 
     Human getHumanFromNode(int nodeId) {
-        return this.getNode(nodeId).getAttribute("human.Human");
+        return this.getNode(nodeId).getAttribute("com.agh.miss.human.Human");
     }
 
     Human getHumanFromNode(Node n) {
-        return n.getAttribute("human.Human");
+        return n.getAttribute("com.agh.miss.human.Human");
     }
 
     void addHuman(Human human, int maxLinkPerStep) {

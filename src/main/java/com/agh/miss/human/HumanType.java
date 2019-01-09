@@ -1,4 +1,4 @@
-package human;
+package com.agh.miss.human;
 
 public enum HumanType {
     SUCCEPTIBLE,

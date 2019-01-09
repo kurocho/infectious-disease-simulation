@@ -1,4 +1,8 @@
-import human.*;
+package com.agh.miss;
+
+import com.agh.miss.disease.DiseaseStrainProvider;
+import com.agh.miss.disease.StrainType;
+import com.agh.miss.human.*;
 import org.graphstream.algorithm.generator.BarabasiAlbertGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Node;
@@ -12,6 +16,7 @@ public class DiseaseSimulation {
     //TODO rozważyć czy nie lepiej zrobić tak że jedna osoba poznaje 1 lub wiecej osob na raz ale tylko się znających
     // lub dodac spotkania tych co znali umarlego?
     private ConfigurationProvider configurationProvider;
+    private DiseaseStrainProvider diseaseStrainProvider;
 
     private int nodeCount;
     private int maxLinksPerStep;
@@ -19,6 +24,7 @@ public class DiseaseSimulation {
 
     DiseaseSimulation() {
         configurationProvider = ConfigurationProvider.getInstance();
+        diseaseStrainProvider = DiseaseStrainProvider.getInstance();
         nodeCount = configurationProvider.getNodeCount();
         maxLinksPerStep = configurationProvider.getMaxLinksPerStep();
     }
@@ -29,7 +35,7 @@ public class DiseaseSimulation {
         setZoom();
         initializeWithHumanType(configurationProvider.getBaselineInfectedPercentage(), HumanType.INFECTED);
         initializeWithHumanType(configurationProvider.getBaselineImmunePercentage(), HumanType.IMMUNE);
-        runSimluation(1000);
+        runSimluation(configurationProvider.getSimulationRunTime());
     }
 
     private void initBAGraph() {
@@ -52,7 +58,9 @@ public class DiseaseSimulation {
         graph.addAttribute("ui.stylesheet",
                 "graph { padding: 100px; fill-color: #2b2b2b; }" +
                         "node { size: 5px; fill-color: #ffc438; text-color: #bbb; text-alignment: under; text-background-mode: rounded-box; text-background-color: #565656; text-padding: 5px, 4px; text-offset: 0px, 5px; }" +
-                        "node.infectious { fill-color: #ff0000; } " +
+                        "node.infected_lethal { fill-color: #000000; } " +
+                        "node.infected_moderate { fill-color: #ff0000; } " +
+                        "node.infected_mild { fill-color: #800080; } " +
                         "node.susceptible { fill-color: #ffc438; } " +
                         "node.immune { fill-color: #00ff00; } " +
                         "edge { fill-color: #bbb; text-color: #bbb; text-alignment: under; text-background-mode: rounded-box; text-background-color: #565656; text-padding: 5px, 4px; text-offset: 0px, 5px; }" +
@@ -85,13 +93,15 @@ public class DiseaseSimulation {
     private void initializeWithHumanType(double baselinePercentage, HumanType humanType) {
         int count = graph.getNodeCount();
         int howManyToAffect = (int) Math.floor(count * (baselinePercentage / 100));
-        while (howManyToAffect > 0) {
+        while (howManyToAffect-- > 0) {
             int nodeId = (int) Math.floor(Math.random() * count);
             Human human = graph.getHumanFromNode(nodeId);
             switch (humanType) {
                 case INFECTED:
                     if (human.isSusceptible()) {
-                        graph.changeHumanState(human.getNode(), new Infected(human));
+                        StrainType strainType = diseaseStrainProvider.getRandomStrain();
+                        graph.changeHumanState(human.getNode(),
+                                new Infected(human, strainType, diseaseStrainProvider.getStrain(strainType)));
                     }
                     break;
                 case IMMUNE:
@@ -100,18 +110,17 @@ public class DiseaseSimulation {
                     }
                     break;
             }
-            --howManyToAffect;
         }
     }
 
-    private void runSimluation(int dayTime) {
-        while (true) {
-            sleep(dayTime);
+    private void runSimluation(int simulationRunTime) {
+
+        while (simulationRunTime-- > 0) {
+
             //born
             graph.addHuman(new Susceptible(), maxLinksPerStep);
 //            graph.killRandomHuman();
-
-
+            sleep(200);
         }
     }
 

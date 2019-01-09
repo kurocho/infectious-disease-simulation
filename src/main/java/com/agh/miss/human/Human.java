@@ -1,4 +1,4 @@
-package human;
+package com.agh.miss.human;
 
 import org.graphstream.graph.Node;
 
@@ -22,17 +22,17 @@ public abstract class Human {
         setStatus();
     }
 
-    public boolean isInfected(){
+    public boolean isInfected() {
         return false;
-    };
+    }
 
-    public boolean isImmune(){
+    public boolean isImmune() {
         return false;
-    };
+    }
 
-    public boolean isSusceptible(){
+    public boolean isSusceptible() {
         return false;
-    };
+    }
 
 
     public void setNode(Node n) {
@@ -41,7 +41,6 @@ public abstract class Human {
     }
 
     private void setStatus() {
-        setStyle();
     }
 
     protected abstract void setStyle();

@@ -1,1 +1,1 @@
-# infectious-disease-simulation
+# infectious-com.agh.miss.disease-simulation

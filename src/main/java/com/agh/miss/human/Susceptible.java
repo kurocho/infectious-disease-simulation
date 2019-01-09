@@ -1,4 +1,4 @@
-package human;
+package com.agh.miss.human;
 
 import org.graphstream.graph.Node;
 
@@ -10,10 +10,12 @@ public class Susceptible extends Human {
 
     public Susceptible(Human human) {
         super(human);
+        setStyle();
     }
 
     public Susceptible(Node node) {
         super(node);
+        setStyle();
     }
 
     @Override
