@@ -1,3 +1,4 @@
+import human.Human;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
@@ -21,7 +22,7 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void bindHumanToNode(Node n, Human h) {
-        n.addAttribute("Human", h);
+        n.addAttribute("human.Human", h);
     }
 
     void changeHumanState(Node n, Human h) {
@@ -29,11 +30,11 @@ public class PopulationGraph extends SingleGraph {
     }
 
     Human getHumanFromNode(int nodeId) {
-        return this.getNode(nodeId).getAttribute("Human");
+        return this.getNode(nodeId).getAttribute("human.Human");
     }
 
     Human getHumanFromNode(Node n) {
-        return n.getAttribute("Human");
+        return n.getAttribute("human.Human");
     }
 
     void addHuman(Human human, int maxLinkPerStep) {
@@ -87,7 +88,7 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void killHuman(Human human) {
-        this.removeNode(human.node);
+        this.removeNode(human.getNode());
     }
 
 

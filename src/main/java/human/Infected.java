@@ -1,25 +1,27 @@
+package human;
+
 import org.graphstream.graph.Node;
 
-public class Infectious extends Human {
+public class Infected extends Human {
 
-    public Infectious() {
+    public Infected() {
     }
 
-    public Infectious(Human human) {
+    public Infected(Human human) {
         super(human);
     }
 
-    public Infectious(Node node) {
+    public Infected(Node node) {
         super(node);
     }
 
     @Override
-    void setStyle() {
+    protected void setStyle() {
         node.setAttribute("ui.class", "infectious");
     }
 
     @Override
-    boolean isInfected() {
+    public boolean isInfected() {
         return true;
     }
 

@@ -10,7 +10,8 @@ public class ConfigurationProvider {
     private Properties properties;
     private int nodeCount;
     private int maxLinksPerStep;
-    private double baseLineInfectedPercentage;
+    private double baselineInfectedPercentage;
+    private double baselineImmunePercentage;
 
     private ConfigurationProvider() {
         this.properties = new Properties();
@@ -18,8 +19,8 @@ public class ConfigurationProvider {
             properties.load(inputStream);
             nodeCount = Integer.parseInt(properties.getProperty("node_count"));
             maxLinksPerStep = Integer.parseInt(properties.getProperty("max_links_per_step"));
-            baseLineInfectedPercentage = Double.parseDouble(properties.getProperty("baseline_infected_percentage"));
-
+            baselineInfectedPercentage = Double.parseDouble(properties.getProperty("baseline_infected_percentage"));
+            baselineImmunePercentage = Double.parseDouble(properties.getProperty("baseline_immune_percentage"));
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -39,7 +40,11 @@ public class ConfigurationProvider {
         return maxLinksPerStep;
     }
 
-    public double getBaseLineInfectedPercentage() {
-        return baseLineInfectedPercentage;
+    public double getBaselineInfectedPercentage() {
+        return baselineInfectedPercentage;
+    }
+
+    public double getBaselineImmunePercentage() {
+        return baselineImmunePercentage;
     }
 }

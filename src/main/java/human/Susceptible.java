@@ -1,3 +1,5 @@
+package human;
+
 import org.graphstream.graph.Node;
 
 public class Susceptible extends Human {
@@ -15,12 +17,12 @@ public class Susceptible extends Human {
     }
 
     @Override
-    void setStyle() {
+    protected void setStyle() {
         node.setAttribute("ui.class", "susceptible");
     }
 
     @Override
-    boolean isInfected() {
-        return false;
+    public boolean isSusceptible() {
+        return true;
     }
 }

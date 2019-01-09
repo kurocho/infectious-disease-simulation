@@ -1,3 +1,4 @@
+import human.*;
 import org.graphstream.algorithm.generator.BarabasiAlbertGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.graph.Node;
@@ -26,7 +27,8 @@ public class DiseaseSimulation {
         setStyle();
         initBAGraph();
         setZoom();
-        initializeWithInfectedHumans(configurationProvider.getBaseLineInfectedPercentage());
+        initializeWithHumanType(configurationProvider.getBaselineInfectedPercentage(), HumanType.INFECTED);
+        initializeWithHumanType(configurationProvider.getBaselineImmunePercentage(), HumanType.IMMUNE);
         runSimluation(1000);
     }
 
@@ -80,16 +82,25 @@ public class DiseaseSimulation {
         });
     }
 
-    private void initializeWithInfectedHumans(double baselineInfectedPercentage) {
+    private void initializeWithHumanType(double baselinePercentage, HumanType humanType) {
         int count = graph.getNodeCount();
-        int howManyToInfect = (int) Math.floor(count * (baselineInfectedPercentage / 100));
-        while(howManyToInfect > 0){
+        int howManyToAffect = (int) Math.floor(count * (baselinePercentage / 100));
+        while (howManyToAffect > 0) {
             int nodeId = (int) Math.floor(Math.random() * count);
             Human human = graph.getHumanFromNode(nodeId);
-            if(!human.isInfected()){
-                graph.changeHumanState(human.node, new Infectious(human));
-                --howManyToInfect;
+            switch (humanType) {
+                case INFECTED:
+                    if (human.isSusceptible()) {
+                        graph.changeHumanState(human.getNode(), new Infected(human));
+                    }
+                    break;
+                case IMMUNE:
+                    if (human.isSusceptible()) {
+                        graph.changeHumanState(human.getNode(), new Immune(human));
+                    }
+                    break;
             }
+            --howManyToAffect;
         }
     }
 
