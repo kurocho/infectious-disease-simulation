@@ -37,6 +37,10 @@ public class Infected extends Human {
         return true;
     }
 
+    public StrainType getStrainType() {
+        return strainType;
+    }
+
     public DiseaseStrain getDiseaseStrain() {
         return diseaseStrain;
     }

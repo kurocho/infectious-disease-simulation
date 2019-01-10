@@ -93,6 +93,14 @@ public class DiseaseSimulation {
     private void initializeWithHumanType(double baselinePercentage, HumanType humanType) {
         int count = graph.getNodeCount();
         int howManyToAffect = (int) Math.floor(count * (baselinePercentage / 100));
+        switch (humanType) {
+            case INFECTED:
+                System.out.println(howManyToAffect+" people will be infected.");
+                break;
+            case IMMUNE:
+                System.out.println(howManyToAffect+" people will be immune.");
+                break;
+        }
         while (howManyToAffect-- > 0) {
             int nodeId = (int) Math.floor(Math.random() * count);
             Human human = graph.getHumanFromNode(nodeId);
@@ -114,20 +122,22 @@ public class DiseaseSimulation {
     }
 
     private void runSimluation(int simulationRunTime) {
-
         while (simulationRunTime-- > 0) {
-
-            //born
-            graph.addHuman(new Susceptible(), maxLinksPerStep);
-//            graph.killRandomHuman();
-            sleep(200);
+            System.out.println("Simulation time: " + simulationRunTime +"; node count: "+graph.getNodeCount());
+            graph.simulateInfections();
+            graph.simulateCures();
+            graph.simulateDeaths();
+            sleep(1000);
         }
     }
+
+
 
     private void sleep(int i) {
         try {
             Thread.sleep(i);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
         }
     }
 }

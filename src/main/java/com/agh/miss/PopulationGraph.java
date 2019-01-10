@@ -1,6 +1,8 @@
 package com.agh.miss;
 
 import com.agh.miss.human.Human;
+import com.agh.miss.human.Immune;
+import com.agh.miss.human.Infected;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
@@ -24,7 +26,7 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void bindHumanToNode(Node n, Human h) {
-        n.addAttribute("com.agh.miss.human.Human", h);
+        n.addAttribute("Human", h);
     }
 
     void changeHumanState(Node n, Human h) {
@@ -32,11 +34,11 @@ public class PopulationGraph extends SingleGraph {
     }
 
     Human getHumanFromNode(int nodeId) {
-        return this.getNode(nodeId).getAttribute("com.agh.miss.human.Human");
+        return this.getNode(nodeId).getAttribute("Human");
     }
 
     Human getHumanFromNode(Node n) {
-        return n.getAttribute("com.agh.miss.human.Human");
+        return n.getAttribute("Human");
     }
 
     void addHuman(Human human, int maxLinkPerStep) {
@@ -69,6 +71,62 @@ public class PopulationGraph extends SingleGraph {
                 }
             }
         }
+    }
+
+    public void simulateCures() {
+        int counter = 0;
+        for (Node currentNode : getNodeSet()) {
+            Human human = currentNode.getAttribute("Human");
+            if (human.isInfected()) {
+                Infected infected = (Infected) human;
+                double curabilty = infected.getDiseaseStrain().getCurability();
+                if (100 * Math.random() < curabilty) {
+                    changeHumanState(currentNode, new Immune());
+                    counter += 1;
+                }
+            }
+        }
+        System.out.println(counter + " people were cured.");
+    }
+
+    public void simulateInfections() {
+        List<Node> nodes = new ArrayList<Node>(getNodeSet());
+        Collections.shuffle(nodes);
+        int counter = 0;
+        for (Node currentNode : nodes) {
+            Human human = currentNode.getAttribute("Human");
+            if (human.isInfected()) {
+                Infected infected = (Infected) human;
+                double infectiousness = infected.getDiseaseStrain().getInfectiounsness();
+                Iterator<Node> iterator = currentNode.getNeighborNodeIterator();
+                if(iterator.hasNext()){
+                    Node neighbourNode = iterator.next();
+                    Human neighbourHuman = neighbourNode.getAttribute("Human");
+                    if (neighbourHuman.isSusceptible() && 100 * Math.random() < infectiousness) {
+                        changeHumanState(neighbourNode,
+                                new Infected(neighbourHuman, infected.getStrainType(), infected.getDiseaseStrain()));
+                        counter += 1;
+                    }
+                }
+            }
+        }
+        System.out.println(counter + " poeple were infected.");
+    }
+
+    public void simulateDeaths() {
+        int counter = 0;
+        for (Node currentNode : getNodeSet()) {
+            Human human = currentNode.getAttribute("Human");
+            if (human.isInfected()) {
+                Infected infected = (Infected) human;
+                double mortality = infected.getDiseaseStrain().getMortality();
+                if (100 * Math.random() < mortality) {
+                    removeNode(currentNode);
+                    counter += 1;
+                }
+            }
+        }
+        System.out.println(counter + " poeple died.");
     }
 
     Node getRandomNode() {

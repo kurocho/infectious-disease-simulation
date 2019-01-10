@@ -13,5 +13,6 @@ public class ModerateStrain extends DiseaseStrain {
         ConfigurationProvider configurationProvider = ConfigurationProvider.getInstance();
         this.infectiousness = configurationProvider.getModerateStrainInfectiousness();
         this.mortality = configurationProvider.getModerateStrainMortality();
+        this.curability = configurationProvider.getModerateStrainCurability();
     }
 }

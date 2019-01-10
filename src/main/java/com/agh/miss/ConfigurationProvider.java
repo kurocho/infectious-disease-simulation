@@ -19,10 +19,15 @@ public class ConfigurationProvider {
 
     private double lethalStrainInfectiousness;
     private double lethalStrainMortality;
+    private double lethalStrainCurability;
+
     private double moderateStrainInfectiousness;
     private double moderateStrainMortality;
+    private double moderateStrainCurability;
+
     private double mildStrainInfectiousness;
     private double mildStrainMortality;
+    private double mildStrainCurability;
 
     private double lethalStrainBaselinePercentage;
     private double moderateStrainBaselinePercentage;
@@ -41,10 +46,15 @@ public class ConfigurationProvider {
 
             lethalStrainInfectiousness = Double.parseDouble(properties.getProperty("lethal_strain_infectiousness"));
             lethalStrainMortality = Double.parseDouble(properties.getProperty("lethal_strain_mortality"));
+            lethalStrainCurability = Double.parseDouble(properties.getProperty("lethal_strain_curability"));
+
             moderateStrainInfectiousness = Double.parseDouble(properties.getProperty("moderate_strain_infectiousness"));
             moderateStrainMortality = Double.parseDouble(properties.getProperty("moderate_strain_mortality"));
+            moderateStrainCurability = Double.parseDouble(properties.getProperty("moderate_strain_curability"));
+
             mildStrainInfectiousness = Double.parseDouble(properties.getProperty("mild_strain_infectiousness"));
             mildStrainMortality = Double.parseDouble(properties.getProperty("mild_strain_mortality"));
+            mildStrainCurability = Double.parseDouble(properties.getProperty("mild_strain_curability"));
 
             lethalStrainBaselinePercentage = Double.parseDouble(properties.getProperty("lethal_strain_baseline_percentage"));
             moderateStrainBaselinePercentage = Double.parseDouble(properties.getProperty("moderate_strain_baseline_percentage"));
@@ -88,6 +98,10 @@ public class ConfigurationProvider {
         return lethalStrainMortality;
     }
 
+    public double getLethalStrainCurability() {
+        return lethalStrainCurability;
+    }
+
     public double getModerateStrainInfectiousness() {
         return moderateStrainInfectiousness;
     }
@@ -96,12 +110,20 @@ public class ConfigurationProvider {
         return moderateStrainMortality;
     }
 
+    public double getModerateStrainCurability() {
+        return moderateStrainCurability;
+    }
+
     public double getMildStrainInfectiousness() {
         return mildStrainInfectiousness;
     }
 
     public double getMildStrainMortality() {
         return mildStrainMortality;
+    }
+
+    public double getMildStrainCurability() {
+        return mildStrainCurability;
     }
 
     public double getLethalStrainBaselinePercentage() {
