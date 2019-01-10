@@ -3,15 +3,20 @@ package com.agh.miss;
 import com.agh.miss.human.Human;
 import com.agh.miss.human.Immune;
 import com.agh.miss.human.Infected;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class PopulationGraph extends SingleGraph {
 
     Random random = new Random();
+    int numberOfCreatedNodes = getNodeCount();
+    final Stats stats = new Stats();
 
     public PopulationGraph(String id, boolean strictChecking, boolean autoCreate, int initialNodeCapacity, int initialEdgeCapacity) {
         super(id, strictChecking, autoCreate, initialNodeCapacity, initialEdgeCapacity);
@@ -26,95 +31,94 @@ public class PopulationGraph extends SingleGraph {
     }
 
     void bindHumanToNode(Node n, Human h) {
-        n.addAttribute("Human", h);
+        n.setAttribute("Human", h);
     }
 
     void changeHumanState(Node n, Human h) {
         bindHumanToNode(n, h);
+        if(h.isInfected())
+            stats.incInfected();
+        else if(h.isImmune())
+            stats.incCured();
+
     }
 
-    Human getHumanFromNode(int nodeId) {
-        return this.getNode(nodeId).getAttribute("Human");
-    }
 
-    Human getHumanFromNode(Node n) {
+    public static Human getHumanFromNode(Node n) {
         return n.getAttribute("Human");
     }
 
     void addHuman(Human human, int maxLinkPerStep) {
-        int graphNodeCount = getNodeCount();
-        String newId = graphNodeCount + "";
+        maxLinkPerStep = random.nextInt(maxLinkPerStep)+1;
+        int linkCount = 0;
+        numberOfCreatedNodes++;
+        String newId = numberOfCreatedNodes + 1 + "";
         Node newNode = this.addNode(newId);
         human.setNode(newNode);
 
-        int targetDegree = random.nextInt(maxLinkPerStep) + 1;
-        targetDegree = Math.min(targetDegree, graphNodeCount);
-
-        int edgesCreated = 0;
-        if (getNodeCount() > 1) {
+        if(getNodeCount()>1) {
             // shuffle list to make random (but "preferenced" ) connections
-            List<Node> nodes = new ArrayList<Node>(getNodeSet());
+            ArrayList<Node> nodes = new ArrayList<Node>(getNodeSet());
             Collections.shuffle(nodes);
-            // dont stop until node will get at least one edge
-            while (newNode.getDegree() == 0) {
-                for (Node currentNode : nodes) {
-                    if (!currentNode.equals(newNode) && !currentNode.hasEdgeBetween(newNode)) {
-                        double relativeDegree = ((double) currentNode.getDegree() / getDegreeSum());
-                        if (Math.random() <= relativeDegree) {
-                            connectNodes(newNode, currentNode);
-                            edgesCreated++;
+            //dont stop until node will get at least one edge
+            while(newNode.getDegree() == 0) {
+                for (Node n : nodes) {
+                    if(n != newNode && !n.hasEdgeBetween(newNode)) {
+                        double p = ((double) n.getDegree() / getDegreeSum());
+                        if (Math.random() <= p) {
+                            connectNodes(newNode, n);
+                            linkCount++;
+                        } else if(getDegreeSum() == 0){
+                            connectNodes(newNode, getRandomNode());
+                            linkCount++;
+                        } else if(n.getDegree() == 0){
+                            if(Math.random() <= 0.1){
+                                connectNodes(newNode, n);
+                                linkCount++;
+                            }
                         }
-                        if (edgesCreated >= targetDegree) {
+                        if (linkCount >= maxLinkPerStep)
                             break;
-                        }
                     }
                 }
             }
         }
+        stats.incBirth();
     }
 
     public void simulateCures() {
-        int counter = 0;
         for (Node currentNode : getNodeSet()) {
             Human human = currentNode.getAttribute("Human");
             if (human.isInfected()) {
                 Infected infected = (Infected) human;
                 double curabilty = infected.getDiseaseStrain().getCurability();
                 if (100 * Math.random() < curabilty) {
-                    changeHumanState(currentNode, new Immune());
-                    counter += 1;
+                    changeHumanState(currentNode, new Immune(currentNode));
                 }
             }
         }
-        System.out.println(counter + " people were cured.");
     }
 
-    public void simulateInfections() {
-        List<Node> nodes = new ArrayList<Node>(getNodeSet());
-        Collections.shuffle(nodes);
-        int counter = 0;
-        for (Node currentNode : nodes) {
-            Human human = currentNode.getAttribute("Human");
-            if (human.isInfected()) {
-                Infected infected = (Infected) human;
-                double infectiousness = infected.getDiseaseStrain().getInfectiounsness();
-                Iterator<Node> iterator = currentNode.getNeighborNodeIterator();
-                if(iterator.hasNext()){
-                    Node neighbourNode = iterator.next();
-                    Human neighbourHuman = neighbourNode.getAttribute("Human");
-                    if (neighbourHuman.isSusceptible() && 100 * Math.random() < infectiousness) {
-                        changeHumanState(neighbourNode,
-                                new Infected(neighbourHuman, infected.getStrainType(), infected.getDiseaseStrain()));
-                        counter += 1;
+    public void simulateInfections(int maxNumberOfMeetings) {
+            List<Node> nodes = new ArrayList<Node>(getNodeSet());
+            Collections.shuffle(nodes);
+            nodes.stream().unordered().
+                    filter(n -> getHumanFromNode(n).isInfected()).peek(Node::getEdgeSet).forEach(n ->{
+                        Infected infected = (Infected) getHumanFromNode(n);
+                        n.getEdgeSet().stream()
+                        .limit(maxNumberOfMeetings)
+                        .filter(e -> getHumanFromNode(e.getOpposite(n)).isSusceptible()
+                                && infected.getDiseaseStrain().getInfectiounsness() > 100 * Math.random())
+                        .forEach(e -> changeHumanState(n, new Infected((getHumanFromNode(e.getOpposite(n))),
+                                infected.getStrainType(),
+                                infected.getDiseaseStrain())));
                     }
-                }
-            }
-        }
-        System.out.println(counter + " poeple were infected.");
+            );
+
+
     }
 
     public void simulateDeaths() {
-        int counter = 0;
         for (Node currentNode : getNodeSet()) {
             Human human = currentNode.getAttribute("Human");
             if (human.isInfected()) {
@@ -122,11 +126,10 @@ public class PopulationGraph extends SingleGraph {
                 double mortality = infected.getDiseaseStrain().getMortality();
                 if (100 * Math.random() < mortality) {
                     removeNode(currentNode);
-                    counter += 1;
+                    stats.incDiseaseDeaths();
                 }
             }
         }
-        System.out.println(counter + " poeple died.");
     }
 
     Node getRandomNode() {
@@ -142,14 +145,27 @@ public class PopulationGraph extends SingleGraph {
         return getNodeSet().parallelStream().mapToInt(Node::getDegree).sum();
     }
 
+    long getInfectedAmount(){
+       return  getNodeSet().stream().filter(n->getHumanFromNode(n).isInfected()).count();
+    }
+
 
     void killRandomHuman() {
         removeNode(getRandomNode());
+        stats.incNaturalDeaths();
     }
 
     void killHuman(Human human) {
         this.removeNode(human.getNode());
+        stats.incDiseaseDeaths();
     }
+
+    @Override
+    public <T extends Node> T removeNode(Node node) {
+        return super.removeNode(node);
+    }
+
+
 
 
     /**
@@ -197,5 +213,20 @@ public class PopulationGraph extends SingleGraph {
     @Override
     public Spliterator<Node> spliterator() {
         return super.spliterator();
+    }
+
+
+    private synchronized void colorEdge(Edge e){
+        e.setAttribute("ui.style","size: 1px; fill-color: red;");
+        sleep(100);
+        e.setAttribute("ui.style","size: 1px; fill-color: #bbb;");
+    }
+
+    private void sleep(int i) {
+        try {
+            Thread.sleep(i);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 }

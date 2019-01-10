@@ -4,15 +4,15 @@ import org.graphstream.graph.Node;
 
 public abstract class Human {
 
-    protected Node node;
-    protected Status status;
+    Node node;
+    private Status status;
 
-    public Human() {
+    Human() {
 
     }
 
-    public Human(Human otherHuman) {
-        node = otherHuman.node;
+    Human(Human otherHuman) {
+        setNode(otherHuman.node);
         status = otherHuman.status;
         setStatus();
     }
@@ -37,10 +37,11 @@ public abstract class Human {
 
     public void setNode(Node n) {
         node = n;
-        setStatus();
+        n.setAttribute("Human", this);
     }
 
     private void setStatus() {
+
     }
 
     protected abstract void setStyle();

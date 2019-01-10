@@ -13,6 +13,9 @@ public class ConfigurationProvider {
     private int nodeCount;
     private int maxLinksPerStep;
     private int simulationRunTime;
+    private int maxNumberOfMeetings;
+    private double deathRate;
+    private double birthRate;
 
     private double baselineInfectedPercentage;
     private double baselineImmunePercentage;
@@ -40,6 +43,10 @@ public class ConfigurationProvider {
             nodeCount = Integer.parseInt(properties.getProperty("node_count"));
             maxLinksPerStep = Integer.parseInt(properties.getProperty("max_links_per_step"));
             simulationRunTime = Integer.parseInt(properties.getProperty("simulation_run_time"));
+
+            deathRate = Double.parseDouble(properties.getProperty("death_rate"));
+            birthRate = Double.parseDouble(properties.getProperty("birth_rate"));
+            maxNumberOfMeetings = Integer.parseInt(properties.getProperty("max_meetings_per_day"));
 
             baselineInfectedPercentage = Double.parseDouble(properties.getProperty("baseline_infected_percentage"));
             baselineImmunePercentage = Double.parseDouble(properties.getProperty("baseline_immune_percentage"));
@@ -136,5 +143,17 @@ public class ConfigurationProvider {
 
     public double getMildStrainBaselinePercentage() {
         return mildStrainBaselinePercentage;
+    }
+
+    public double getDeathRate() {
+        return deathRate;
+    }
+
+    public double getBirthRate() {
+        return birthRate;
+    }
+
+    public int getMaxNumberOfMeetings() {
+        return maxNumberOfMeetings;
     }
 }
