@@ -6,6 +6,7 @@ public class Susceptible extends Human {
 
 
     public Susceptible() {
+        super();
     }
 
     public Susceptible(Human human) {
