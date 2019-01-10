@@ -1,18 +1,22 @@
+package com.agh.miss;
+
+import com.agh.miss.human.Human;
+import com.agh.miss.human.Immune;
+import com.agh.miss.human.Infected;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Spliterator;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class PopulationGraph extends SingleGraph {
 
-    double zeroLinkNodeChance = 0.1;
-    int numberOfCreatedNodes = 0;
     Random random = new Random();
+    int numberOfCreatedNodes = getNodeCount();
+    final Stats stats = new Stats();
 
     public PopulationGraph(String id, boolean strictChecking, boolean autoCreate, int initialNodeCapacity, int initialEdgeCapacity) {
         super(id, strictChecking, autoCreate, initialNodeCapacity, initialEdgeCapacity);
@@ -26,19 +30,21 @@ public class PopulationGraph extends SingleGraph {
         super(id);
     }
 
-    void bindNodeWithHuman(Node n, Human h) {
-        n.addAttribute("Human", h);
-    }
-
-    void changeHumanState(Node n, Human h) {
+    void bindHumanToNode(Node n, Human h) {
         n.setAttribute("Human", h);
     }
 
-    Human getHumanFromNode(int count) {
-        return this.getNode(count).getAttribute("Human");
+    void changeHumanState(Node n, Human h) {
+        bindHumanToNode(n, h);
+        if(h.isInfected())
+            stats.incInfected();
+        else if(h.isImmune())
+            stats.incCured();
+
     }
 
-    Human getHumanFromNode(Node n) {
+
+    public static Human getHumanFromNode(Node n) {
         return n.getAttribute("Human");
     }
 
@@ -66,7 +72,7 @@ public class PopulationGraph extends SingleGraph {
                             connectNodes(newNode, getRandomNode());
                             linkCount++;
                         } else if(n.getDegree() == 0){
-                            if(Math.random() <= zeroLinkNodeChance){
+                            if(Math.random() <= 0.1){
                                 connectNodes(newNode, n);
                                 linkCount++;
                             }
@@ -77,28 +83,89 @@ public class PopulationGraph extends SingleGraph {
                 }
             }
         }
+        stats.incBirth();
     }
 
-    Node getRandomNode(){
+    public void simulateCures() {
+        for (Node currentNode : getNodeSet()) {
+            Human human = currentNode.getAttribute("Human");
+            if (human.isInfected()) {
+                Infected infected = (Infected) human;
+                double curabilty = infected.getDiseaseStrain().getCurability();
+                if (100 * Math.random() < curabilty) {
+                    changeHumanState(currentNode, new Immune(currentNode));
+                }
+            }
+        }
+    }
+
+    public void simulateInfections(int maxNumberOfMeetings) {
+            List<Node> nodes = new ArrayList<Node>(getNodeSet());
+            Collections.shuffle(nodes);
+            nodes.stream().unordered().
+                    filter(n -> getHumanFromNode(n).isInfected()).peek(Node::getEdgeSet).forEach(n ->{
+                        Infected infected = (Infected) getHumanFromNode(n);
+                        n.getEdgeSet().stream()
+                        .limit(maxNumberOfMeetings)
+                        .filter(e -> getHumanFromNode(e.getOpposite(n)).isSusceptible()
+                                && infected.getDiseaseStrain().getInfectiounsness() > 100 * Math.random())
+                        .forEach(e -> changeHumanState(n, new Infected((getHumanFromNode(e.getOpposite(n))),
+                                infected.getStrainType(),
+                                infected.getDiseaseStrain())));
+                    }
+            );
+
+
+    }
+
+    public void simulateDeaths() {
+        for (Node currentNode : getNodeSet()) {
+            Human human = currentNode.getAttribute("Human");
+            if (human.isInfected()) {
+                Infected infected = (Infected) human;
+                double mortality = infected.getDiseaseStrain().getMortality();
+                if (100 * Math.random() < mortality) {
+                    removeNode(currentNode);
+                    stats.incDiseaseDeaths();
+                }
+            }
+        }
+    }
+
+    Node getRandomNode() {
         return getNode(random.nextInt(getNodeCount()));
     }
 
-    void connectNodes(Node first, Node second){
-        if(!first.hasEdgeBetween(second))
+    void connectNodes(Node first, Node second) {
+        if (!first.hasEdgeBetween(second))
             addEdge(first.getId() + "_" + second.getId(), first, second);
     }
 
-    int getDegreeSum(){
+    int getDegreeSum() {
         return getNodeSet().parallelStream().mapToInt(Node::getDegree).sum();
     }
 
+    long getInfectedAmount(){
+       return  getNodeSet().stream().filter(n->getHumanFromNode(n).isInfected()).count();
+    }
 
-    void killRandomHuman(){
+
+    void killRandomHuman() {
         removeNode(getRandomNode());
+        stats.incNaturalDeaths();
     }
+
     void killHuman(Human human) {
-        this.removeNode(human.node);
+        this.removeNode(human.getNode());
+        stats.incDiseaseDeaths();
     }
+
+    @Override
+    public <T extends Node> T removeNode(Node node) {
+        return super.removeNode(node);
+    }
+
+
 
 
     /**
@@ -146,5 +213,20 @@ public class PopulationGraph extends SingleGraph {
     @Override
     public Spliterator<Node> spliterator() {
         return super.spliterator();
+    }
+
+
+    private synchronized void colorEdge(Edge e){
+        e.setAttribute("ui.style","size: 1px; fill-color: red;");
+        sleep(100);
+        e.setAttribute("ui.style","size: 1px; fill-color: #bbb;");
+    }
+
+    private void sleep(int i) {
+        try {
+            Thread.sleep(i);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 }

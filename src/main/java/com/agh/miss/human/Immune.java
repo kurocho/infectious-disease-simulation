@@ -1,26 +1,26 @@
+package com.agh.miss.human;
+
 import org.graphstream.graph.Node;
 
 public class Immune extends Human {
 
-    public Immune() {
-    }
-
     public Immune(Human human) {
         super(human);
+        setStyle();
     }
 
     public Immune(Node node) {
         super(node);
+        setStyle();
     }
 
     @Override
-    void setStyle() {
+    protected void setStyle() {
         node.setAttribute("ui.class", "immune");
     }
 
     @Override
-    boolean isInfected() {
-        return false;
+    public boolean isImmune() {
+        return true;
     }
-
 }
