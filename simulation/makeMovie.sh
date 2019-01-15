@@ -1,7 +1,4 @@
 #!/bin/bash
-for n in {001..100}; do
-    cp 004691.png 0047$n.png
-done
  EXT=png
  OPT="vcodec=mpeg4:vqscale=1:vhq:v4mv:trell:autoaspect"
  FPS=25
