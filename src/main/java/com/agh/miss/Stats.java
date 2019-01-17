@@ -48,4 +48,16 @@ public class Stats {
     public int getCuredCounter() {
         return curedCounter;
     }
+
+    public int getBirthCounter() {
+        return birthCounter;
+    }
+
+    public int getNaturalDeathCounter() {
+        return naturalDeathCounter;
+    }
+
+    public int getDiseaseDeathCounter() {
+        return diseaseDeathCounter;
+    }
 }

@@ -100,6 +100,7 @@ public class PopulationGraph extends SingleGraph {
     }
 
     public void simulateInfections(int maxNumberOfMeetings) {
+
             List<Node> nodes = new ArrayList<Node>(getNodeSet());
             Collections.shuffle(nodes);
             nodes.stream().unordered().
